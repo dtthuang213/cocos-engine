@@ -34,6 +34,7 @@ export class TextLayout {
     public overFlow = 0;// Enum  // both
 
     public lineHeight = 10; // both
+    public lineSpacing = 0; // both
 
     // bmfont extra part
     public maxLineWidth = 0; // bmfont
@@ -62,6 +63,7 @@ export class TextLayout {
         this.wrapping = true;
         this.overFlow = 0;
         this.lineHeight = 10;
+        this.lineSpacing = 0;
         this.maxLineWidth = 0;
         this.spacingX = 0;
         this.textWidthTemp = 0;

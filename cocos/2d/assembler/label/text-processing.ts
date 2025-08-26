@@ -219,7 +219,7 @@ export class TextProcessing {
                 const paraLength = safeMeasureText(this._context, paragraphedStrings[i], _fontDesc);
                 canvasSizeX = canvasSizeX > paraLength ? canvasSizeX : paraLength;
             }
-            canvasSizeY = (_splitStrings.length + BASELINE_RATIO) * this._getLineHeight(layout.lineHeight, style.actualFontSize, style.fontSize);
+                        canvasSizeY = (_splitStrings.length + BASELINE_RATIO) * this._getLineHeight(layout.lineHeight, style.actualFontSize, style.fontSize) + (_splitStrings.length - 1) * layout.lineSpacing;
             const rawWidth = canvasSizeX;
             const rawHeight = canvasSizeY;
 
@@ -245,7 +245,7 @@ export class TextProcessing {
         case Overflow.RESIZE_HEIGHT: {
             this._calculateWrapText(paragraphedStrings, style, layout, outputLayoutData);
             const rawHeight = (outputLayoutData.parsedString.length + BASELINE_RATIO)
-            * this._getLineHeight(layout.lineHeight, style.actualFontSize, style.fontSize);
+            * this._getLineHeight(layout.lineHeight, style.actualFontSize, style.fontSize) + (outputLayoutData.parsedString.length - 1) * layout.lineSpacing;
 
             canvasSize.width  = nodeContentSize.width * fontScale;
             canvasSize.height = (rawHeight + canvasPadding.height * fontScale);
@@ -325,6 +325,7 @@ export class TextProcessing {
                 _fontDesc = this._getFontDesc(_fontSize, style.fontFamily, style.isBold, style.isItalic);
                 this._context.font = _fontDesc;
                 const lineHeight = this._getLineHeight(layout.lineHeight, _fontSize, style.fontSize);
+                const lineSpacing = layout.lineSpacing;
 
                 totalHeight = 0;
                 for (i = 0; i < paragraphedStrings.length; ++i) {
@@ -335,7 +336,7 @@ export class TextProcessing {
                         canvasWidthNoMargin,
                         this._measureText(this._context, _fontDesc),
                     );
-                    totalHeight += textFragment.length * lineHeight;
+                    totalHeight += textFragment.length * lineHeight + lineSpacing * (textFragment.length - 1);
                 }
 
                 if (totalHeight > canvasHeightNoMargin) {
@@ -353,7 +354,7 @@ export class TextProcessing {
                 this._context.font = _fontDesc;
             }
         } else {
-            totalHeight = paragraphedStrings.length * this._getLineHeight(layout.lineHeight, _fontSize, style.fontSize);
+            totalHeight = paragraphedStrings.length * this._getLineHeight(layout.lineHeight, _fontSize, style.fontSize) + (paragraphedStrings.length - 1) * layout.lineSpacing;
 
             for (i = 0; i < paragraphedStrings.length; ++i) {
                 if (maxLength < paragraphLength[i]) {
@@ -466,7 +467,7 @@ export class TextProcessing {
         }
 
         const lineHeight = this._getLineHeight(layout.lineHeight, style.actualFontSize, style.fontSize);
-        const drawStartY = lineHeight * (outputLayoutData.parsedString.length - 1);
+        const drawStartY = (lineHeight + layout.lineSpacing) * (outputLayoutData.parsedString.length - 1);
         // TOP
         let firstLinelabelY = style.actualFontSize * (1 - BASELINE_RATIO / 2);
         if (layout.verticalAlign !== VerticalTextAlignment.TOP as number) {
@@ -527,7 +528,7 @@ export class TextProcessing {
         const { parsedString } = outputLayoutData;
         // draw text and outline
         for (let i = 0; i < parsedString.length; ++i) {
-            drawTextPosY = tempPos.y + i * lineHeight;
+            drawTextPosY = tempPos.y + i * (lineHeight + layout.lineSpacing);
             //draw shadow
             if (style.hasShadow) {
                 this._setupShadow(style);
@@ -613,7 +614,7 @@ export class TextProcessing {
         // draw shadow and (outline or text)
         for (let i = 0; i < parsedString.length; ++i) {
             drawTextPosX = startPosition.x;
-            drawTextPosY = startPosition.y + i * lineHeight;
+            drawTextPosY = startPosition.y + i * (lineHeight + layout.lineSpacing);
             // multiple lines need to be drawn outline and fill text
             if (isMultiple) {
                 //draw shadow
@@ -820,7 +821,7 @@ export class TextProcessing {
         let lowestY = 0;
         let letterDef: FontLetterDefinition | null = null;
 
-        const _lineSpacing = 0; // use less?
+        const _lineSpacing = layout.lineSpacing; // use less?
 
         for (let index = 0; index < textLen;) {
             let character = getSymbolAt(_string, index);
