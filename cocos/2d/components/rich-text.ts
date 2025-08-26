@@ -801,7 +801,7 @@ export class RichText extends Component {
                 components.forEach((component) => {
                     const func = component[clickHandler];
                     if (component.enabledInHierarchy && func) {
-                        func.call(component, event, clickParam);
+                        func.call(component, event, clickParam, seg);
                     }
                 });
                 event.propagationStopped = true;
