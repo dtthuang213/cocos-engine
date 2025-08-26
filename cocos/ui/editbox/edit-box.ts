@@ -380,6 +380,30 @@ export class EditBox extends Component {
     public editingReturn: ComponentEventHandler[] = [];
 
     /**
+     * @en The restriction on input characters.
+     * @zh 对输入字符的限制。
+     */
+    @displayOrder(15)
+    get restrict(): string {
+        return this._restrict;
+    }
+
+    set restrict(value: string) {
+        this._restrict = value;
+        // H5保存RegExp
+        if (value) {
+            value = "[^" + value + "]";
+
+            // 如果pattern为^\00-\FF，则我们需要的正则表达式是\00-\FF
+            if (value.indexOf("^^") > -1)
+                value = value.replace("^^", "");
+
+            this._restrictPattern = new RegExp(value, "g");
+        } else
+            this._restrictPattern = null;
+    }
+
+    /**
      * @deprecated since v3.5.0, this is an engine private interface that will be removed in the future.
      */
     public _impl: EditBoxImplBase | null = null;
@@ -406,6 +430,10 @@ export class EditBox extends Component {
     protected  _inputMode = InputMode.ANY;
     @serializable
     protected  _maxLength = 20;
+    @serializable
+    protected  _restrict: string = '';
+    @serializable
+    protected  _restrictPattern: any = null;
 
     private _isLabelVisible = false;
 
@@ -515,6 +543,18 @@ export class EditBox extends Component {
      * @deprecated since v3.5.0, this is an engine private interface that will be removed in the future.
      */
     public _editBoxTextChanged (text: string): void {
+        // 对输入字符进行限制
+        if (this._restrictPattern) {
+            // 部分输入法兼容
+            text = text.replace(/\u2006|\x27/g, "");
+
+            if (this._restrictPattern.test(text)) {
+                text = text.replace(this._restrictPattern, "");
+                if (this._impl && this._impl['_edTxt']) {
+                    this._impl['_edTxt'].value = text;
+                }
+            }
+        }
         text = this._updateLabelStringStyle(text, true);
         this.string = text;
         ComponentEventHandler.emitEvents(this.textChanged, text, this);
