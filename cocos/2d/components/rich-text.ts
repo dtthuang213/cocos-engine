@@ -403,6 +403,28 @@ export class RichText extends Component {
 
     /**
      * @en
+     * Line Space of RichText.
+     *
+     * @zh
+     * 富文本行距。
+     */
+    @editable
+    get lineSpacing (): number {
+        return this._lineSpacing;
+    }
+
+    set lineSpacing (value) {
+        if (this._lineSpacing === value) {
+            return;
+        }
+
+        this._lineSpacing = value;
+        this._layoutDirty = true;
+        this._updateRichTextStatus();
+    }
+
+    /**
+     * @en
      * The image atlas for the img tag. For each src value in the img tag, there should be a valid spriteFrame in the image atlas.
      *
      * @zh
@@ -465,6 +487,8 @@ export class RichText extends Component {
 
     @serializable
     protected _lineHeight = 40;
+    @serializable
+    protected _lineSpacing = 0;
     @serializable
     protected _string = '<color=#00ff00>Rich</color><color=#0fffff>Text</color>';
     // protected _updateRichTextStatus =
@@ -1148,7 +1172,7 @@ this._measureText(styleIndex) as unknown as (s: string) => number,
         if (this._maxWidth > 0) {
             this._labelWidth = this._maxWidth;
         }
-        this._labelHeight = (this._lineCount + BASELINE_RATIO) * this._lineHeight;
+        this._labelHeight = (this._lineCount + BASELINE_RATIO) * this._lineHeight + this._lineSpacing * (this._lineCount - 1);
 
         // trigger "size-changed" event
         this.node._getUITransformComp()!.setContentSize(this._labelWidth, this._labelHeight);
@@ -1210,7 +1234,7 @@ this._measureText(styleIndex) as unknown as (s: string) => number,
             const pos = segmentNode.position;
             segmentNode.setPosition(
                 nextTokenX + lineOffsetX,
-                this._lineHeight * (totalLineCount - lineCount) - this._labelHeight * anchorY,
+                (this._lineHeight + this._lineSpacing) * (totalLineCount - lineCount) - this._labelHeight * anchorY,
                 pos.z,
             );
 
@@ -1327,6 +1351,7 @@ this._measureText(styleIndex) as unknown as (s: string) => number,
         }
         label.useSystemFont = this._isSystemFontUsed;
         label.lineHeight = this._lineHeight;
+        label.lineSpacing = this._lineSpacing;
 
         label.updateRenderData(true);
     }

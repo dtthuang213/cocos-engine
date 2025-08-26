@@ -332,6 +332,26 @@ export class Label extends UIRenderer {
 
     /**
      * @en
+     * Line Space of label.
+     *
+     * @zh
+     * 文本行距。
+     */
+    @displayOrder(9)
+    get lineSpacing (): number {
+        return this._lineSpacing;
+    }
+    set lineSpacing (value) {
+        if (this._lineSpacing === value) {
+            return;
+        }
+
+        this._lineSpacing = value;
+        this._markForUpdateRenderData();
+    }
+
+    /**
+     * @en
      * The spacing between text characters, only available in BMFont.
      *
      * @zh
@@ -804,6 +824,8 @@ export class Label extends UIRenderer {
     protected _fontFamily = 'Arial';
     @serializable
     protected _lineHeight = 40;
+    @serializable
+    protected _lineSpacing = 0;
     @serializable
     protected _overflow: Overflow = Overflow.NONE;
     @serializable

@@ -52,6 +52,7 @@ export class TTFUtils {
         outputLayoutData.nodeContentSize.height = outputLayoutData.canvasSize.height = trans.height;
         // layout info
         layout.lineHeight = comp.lineHeight; // both
+        layout.lineSpacing = comp.lineSpacing; // both
         layout.overFlow = comp.overflow; // layout only // but change render
         if (comp.overflow === Overflow.NONE) {
             layout.wrapping = false;
