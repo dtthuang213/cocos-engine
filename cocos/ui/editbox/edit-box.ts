@@ -548,10 +548,15 @@ export class EditBox extends Component {
             // 部分输入法兼容
             text = text.replace(/\u2006|\x27/g, "");
 
-            if (this._restrictPattern.test(text)) {
+            let match = text.match(this._restrictPattern);
+            if (match) {
                 text = text.replace(this._restrictPattern, "");
-                if (this._impl && this._impl['_edTxt']) {
-                    this._impl['_edTxt'].value = text;
+                if (this._impl) {
+                    if (this._impl['_edTxt']) {
+                        let index = this._impl['_edTxt'].selectionStart - match.length;
+                        this._impl['_edTxt'].value = text;
+                        this._impl['_edTxt'].setSelectionRange(index, index);
+                    }
                 }
             }
         }
