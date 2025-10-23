@@ -35,6 +35,7 @@ import { TextureBase } from '../../asset/assets/texture-base';
 import { Material, RenderTexture } from '../../asset/assets';
 import { NodeEventType } from '../../scene-graph/node-event';
 import type { RenderData } from '../renderer/render-data';
+import { IAssembler } from '../renderer/base';
 
 /**
  * @en
@@ -588,9 +589,16 @@ export class Sprite extends UIRenderer {
         return true;
     }
 
+    public customAssembler: IAssembler | undefined;
+
+    protected _getAssembler() {
+        if (this.customAssembler) return this.customAssembler;
+        return Sprite.Assembler.getAssembler(this);
+    }
+
     protected _flushAssembler (): void {
         const self = this;
-        const assembler = Sprite.Assembler.getAssembler(self);
+        const assembler = this._getAssembler();
 
         if (self._assembler !== assembler) {
             self.destroyRenderData();
