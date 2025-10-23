@@ -416,8 +416,8 @@ export class UITransform extends Component {
         const v2WorldPt = _vec2a;
         const testPt = _vec2b;
 
-        const cameras = this._getRenderScene().cameras;
-        for (let i = 0; i < cameras.length; i++) {
+        const cameras = this._getRenderScene()?.cameras;
+        for (let i = 0; cameras && i < cameras.length; i++) {
             const camera = cameras[i];
             if (!(camera.visibility & this.node.layer)) continue;
 
@@ -464,8 +464,8 @@ export class UITransform extends Component {
         const v2WorldPt = _vec2a;
         const testPt = _vec2b;
 
-        const cameras = this._getRenderScene().cameras;
-        for (let i = 0; i < cameras.length; i++) {
+        const cameras = this._getRenderScene()?.cameras;
+        for (let i = 0; cameras && i < cameras.length; i++) {
             const camera = cameras[i];
             if (!(camera.visibility & this.node.layer) || (camera.window && !camera.window.swapchain)) { continue; }
             if (camera.systemWindowId !== windowId) {
