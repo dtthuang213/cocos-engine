@@ -661,7 +661,7 @@ export class EditBox extends Component {
         }
 
         if (this._inputMode === InputMode.ANY) {
-            textLabel.verticalAlign = VerticalTextAlignment.TOP;
+            // textLabel.verticalAlign = VerticalTextAlignment.TOP;
             textLabel.enableWrapText = true;
         } else {
             textLabel.enableWrapText = false;
@@ -812,7 +812,7 @@ export class EditBox extends Component {
             textLabel.node._getUITransformComp()!.setContentSize(size.width - LEFT_PADDING, size.height);
             textLabel.node.setPosition(offX + LEFT_PADDING, offY + size.height, textLabel.node.position.z);
             if (this._inputMode === InputMode.ANY) {
-                textLabel.verticalAlign = VerticalTextAlignment.TOP;
+                // textLabel.verticalAlign = VerticalTextAlignment.TOP;
             }
             textLabel.enableWrapText = this._inputMode === InputMode.ANY;
         }
