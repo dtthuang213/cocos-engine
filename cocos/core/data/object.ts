@@ -86,9 +86,8 @@ function compileDestruct (obj: any, ctor: any): DestructFunction {
     for (key in obj) {
         // eslint-disable-next-line no-prototype-builtins
         if (obj.hasOwnProperty(key)) {
-            if (key === idToSkip) {
-                continue;
-            }
+            if (key === idToSkip) continue;
+            if (key.indexOf('_$$') == 0) continue;
             switch (typeof obj[key]) {
             case 'string':
                 propsToReset[key] = '';
@@ -112,9 +111,8 @@ function compileDestruct (obj: any, ctor: any): DestructFunction {
             // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             const attrKey = `${key}`;
             if (attrKey in attrs) {
-                if (shouldSkipId && key === '_id') {
-                    continue;
-                }
+                if (shouldSkipId && key === '_id') continue;
+                if (key.indexOf('_$$') == 0) continue;
                 switch (typeof attrs[attrKey]) {
                 case 'string':
                     propsToReset[key] = '';
