@@ -1126,8 +1126,8 @@ this._measureText(styleIndex) as unknown as (s: string) => number,
                 }
             }
 
-            const splitArr: string[] = this.splitLongStringApproximatelyIn2048(text, i);
-            text = splitArr.join('\n');
+            // const splitArr: string[] = this.splitLongStringApproximatelyIn2048(text, i);
+            // text = splitArr.join('\n');
 
             const multilineTexts = text.split('\n');
 
