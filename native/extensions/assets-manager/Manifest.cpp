@@ -51,6 +51,7 @@
 #define KEY_SIZE            "size"
 #define KEY_COMPRESSED_FILE "compressedFile"
 #define KEY_DOWNLOAD_STATE  "downloadState"
+#define KEY_URL             "url"
 
 NS_CC_EXT_BEGIN
 
@@ -415,6 +416,7 @@ void Manifest::clear() {
 Manifest::Asset Manifest::parseAsset(const std::string &path, const rapidjson::Value &json) {
     Asset asset;
     asset.path = path;
+    asset.url = path;
 
     if (json.HasMember(KEY_MD5) && json[KEY_MD5].IsString()) {
         asset.md5 = json[KEY_MD5].GetString();
@@ -424,6 +426,10 @@ Manifest::Asset Manifest::parseAsset(const std::string &path, const rapidjson::V
 
     if (json.HasMember(KEY_PATH) && json[KEY_PATH].IsString()) {
         asset.path = json[KEY_PATH].GetString();
+    }
+
+    if (json.HasMember(KEY_URL) && json[KEY_URL].IsString()) {
+        asset.url = json[KEY_URL].GetString();
     }
 
     if (json.HasMember(KEY_COMPRESSED) && json[KEY_COMPRESSED].IsBool()) {

@@ -53,6 +53,7 @@ struct ManifestAsset {
     bool compressed;
     float size;
     int downloadState;
+    std::string url;
 };
 
 using DownloadUnits = std::unordered_map<std::string, DownloadUnit>;
