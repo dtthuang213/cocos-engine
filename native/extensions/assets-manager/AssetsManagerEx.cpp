@@ -743,8 +743,9 @@ void AssetsManagerEx::prepareUpdateAsync(const PrepareUpdateFinishedCallback &cb
                 Manifest::AssetDiff diff = it.second;
                 if (diff.type != Manifest::DiffType::DELETED) {
                     const std::string &path = diff.asset.path;
+                    const std::string &url = diff.asset.url;
                     unit.customId = it.first;
-                    unit.srcUrl = packageUrl + path + "?md5=" + diff.asset.md5;
+                    unit.srcUrl = packageUrl + url + "?md5=" + diff.asset.md5;
                     unit.storagePath = _tempStoragePath + path;
                     unit.size = diff.asset.size;
                     _downloadUnits.emplace(unit.customId, unit);
