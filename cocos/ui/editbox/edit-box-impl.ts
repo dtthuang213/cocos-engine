@@ -456,11 +456,11 @@ export class EditBoxImpl extends EditBoxImplBase {
 
     private _updateMaxLength (): void {
         if (!HTML5) return;
-        let maxLength = this._delegate!.maxLength;
-        if (maxLength < 0) {
-            maxLength = 65535;
-        }
-        this._edTxt!.maxLength = maxLength;
+        // let maxLength = this._delegate!.maxLength;
+        // if (maxLength < 0) {
+        //     maxLength = 65535;
+        // }
+        // this._edTxt!.maxLength = maxLength;
     }
 
     private _initStyleSheet (): void {
@@ -645,10 +645,10 @@ export class EditBoxImpl extends EditBoxImplBase {
             }
             const delegate = this._delegate;
             // input of number type doesn't support maxLength attribute
-            const maxLength = delegate!.maxLength;
-            if (maxLength >= 0 && elem.type !== 'number') {
-                elem.value = elem.value.slice(0, maxLength);
-            }
+            // const maxLength = delegate!.maxLength;
+            // if (maxLength >= 0 && elem.type !== 'number') {
+            //     elem.value = elem.value.slice(0, maxLength);
+            // }
             delegate!._editBoxTextChanged(elem.value);
         };
 

@@ -89,8 +89,25 @@ export class EditBox extends Component {
     }
 
     set string (value) {
-        if (this._maxLength >= 0 && value.length >= this._maxLength) {
-            value = value.slice(0, this._maxLength);
+        if (this._maxLength > 0) {
+            if (this._maxLengthUseChar) {
+                if (value.length > this._maxLength) {
+                    value = value.slice(0, this._maxLength);
+                }
+            } else {
+                let length = this.getChineseLength(value);
+                if (length > this._maxLength) {
+                    let str = '';
+                    for (let i = 0; i < value.length; i++) {
+                        str = value.slice(0, i + 1);
+                        let len = this.getChineseLength(str);
+                        if (len > this._maxLength) {
+                            value = str.slice(0, i);
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         if (this._string === value) {
@@ -99,6 +116,10 @@ export class EditBox extends Component {
 
         this._string = value;
         this._updateString(value);
+    }
+
+    private getChineseLength (value: string) {
+        return value.length + (value.match(/[\u0391-\uFFE5]/g)?.length || 0);
     }
 
     /**
@@ -280,6 +301,12 @@ export class EditBox extends Component {
     set maxLength (value: number) {
         this._maxLength = value;
     }
+    get maxLengthUseChar (): boolean {
+        return this._maxLengthUseChar;
+    }
+    set maxLengthUseChar (value: boolean) {
+        this._maxLengthUseChar = value;
+    }
 
     /**
      * @en
@@ -434,6 +461,8 @@ export class EditBox extends Component {
     protected  _restrict: string = '';
     @serializable
     protected  _restrictPattern: any = null;
+    @serializable
+    protected  _maxLengthUseChar = true;
 
     private _isLabelVisible = false;
 
@@ -543,6 +572,34 @@ export class EditBox extends Component {
      * @deprecated since v3.5.0, this is an engine private interface that will be removed in the future.
      */
     public _editBoxTextChanged (text: string): void {
+        let len = text.length;
+        if (this._maxLength > 0) {
+            if (this._maxLengthUseChar) {
+                if (text.length > this._maxLength) {
+                    text = text.slice(0, this._maxLength);
+                }
+            } else {
+                let length = this.getChineseLength(text);
+                if (length > this._maxLength) {
+                    let str = '';
+                    for (let i = 0; i < text.length; i++) {
+                        str = text.slice(0, i + 1);
+                        let len = this.getChineseLength(str);
+                        if (len > this._maxLength) {
+                            text = str.slice(0, i);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (len != text.length && this._impl) {
+                if (this._impl['_edTxt']) {
+                    let index = this._impl['_edTxt'].selectionStart - (len - text.length);
+                    this._impl['_edTxt'].value = text;
+                    this._impl['_edTxt'].setSelectionRange(index, index);
+                }
+            }
+        }
         // 对输入字符进行限制
         if (this._restrictPattern) {
             // 部分输入法兼容
