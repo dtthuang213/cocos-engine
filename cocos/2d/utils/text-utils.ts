@@ -518,7 +518,7 @@ export function fragmentText (stringToken: string, allWidth: number, maxWidth: n
         if (wrappedWords.length === 0) {
             wrappedWords.push(sText);
         } else {
-            sText = sText.trim();
+            sText = sText.replace(/^\s+/, '');
             if (sText.length > 0) {
                 wrappedWords.push(sText);
             }
@@ -530,7 +530,7 @@ export function fragmentText (stringToken: string, allWidth: number, maxWidth: n
     if (wrappedWords.length === 0) {
         wrappedWords.push(text);
     } else {
-        text = text.trim();
+        text = text.replace(/^\s+/, '');
         if (text.length > 0) {
             wrappedWords.push(text);
         }
