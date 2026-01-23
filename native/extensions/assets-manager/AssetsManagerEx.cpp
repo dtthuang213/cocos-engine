@@ -620,7 +620,14 @@ void AssetsManagerEx::downloadManifest() {
         return;
     }
 
-    std::string manifestUrl = _localManifest->getManifestFileUrl();
+    std::string manifestUrl;// = _localManifest->getManifestFileUrl();
+    
+    if (!_remoteManifest || !_remoteManifest->isVersionLoaded()) {
+        manifestUrl = _localManifest->getManifestFileUrl();
+    } else {
+        manifestUrl = _remoteManifest->getManifestFileUrl();
+    }
+
 
     if (!manifestUrl.empty()) {
         _updateState = State::DOWNLOADING_MANIFEST;
