@@ -35,7 +35,6 @@ import { EventTarget, AsyncDelegate, sys, macro, VERSION, cclegacy, screen, sett
     Settings } from '../core';
 import { input } from '../input';
 import { deviceManager, LegacyRenderMode } from '../gfx';
-import { SplashScreen } from './splash-screen';
 import { Layers, Node } from '../scene-graph';
 import { builtinResMgr } from '../asset/asset-manager/builtin-res-mgr';
 import { director, DirectorEvent } from './director';
@@ -630,12 +629,6 @@ export class Game extends EventTarget {
             this.pause();
             this.resume();
             this._shouldLoadLaunchScene = true;
-        }).then((): Promise<void[]> => {
-            if (WECHAT) {
-                return Promise.resolve([]);
-            } else {
-                return SplashScreen.createInstance().init();
-            }
         }).then((): void => {
             this._safeEmit(Game.EVENT_RESTART);
         });
@@ -894,10 +887,7 @@ export class Game extends EventTarget {
             .then((): Promise<any[]> => this._loadPreloadAssets())
             .then((): Promise<void[]> => {
                 builtinResMgr.compileBuiltinMaterial();
-                if (WECHAT) {
-                    return Promise.resolve([]);
-                }
-                return SplashScreen.createInstance().init();
+                return Promise.resolve([]);
             })
             .then((): Promise<void[]> => {
                 if (DEBUG) {
@@ -1061,12 +1051,7 @@ export class Game extends EventTarget {
 
     private _updateCallback (): void {
         if (!this._inited) return;
-        if (!WECHAT && SplashScreen.instance && !SplashScreen.instance.isFinished) {
-            SplashScreen.instance.update(this._calculateDT(false));
-        } else if (this._shouldLoadLaunchScene) {
-            if (!WECHAT) {
-                SplashScreen.releaseInstance();
-            }
+        if (this._shouldLoadLaunchScene) {
             this._shouldLoadLaunchScene = false;
             const launchScene = querySettings(SettingsCategory.LAUNCH, 'launchScene') as string;
             if (launchScene) {
