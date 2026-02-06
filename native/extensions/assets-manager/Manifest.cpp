@@ -290,7 +290,7 @@ void Manifest::genResumeAssetsList(DownloadUnits *units) const {
         if (asset.downloadState != DownloadState::SUCCESSED && asset.downloadState != DownloadState::UNMARKED) {
             DownloadUnit unit;
             unit.customId = it.first;
-            unit.srcUrl = _packageUrl + asset.path;
+            unit.srcUrl = _packageUrl + asset.url + "?md5=" + asset.md5;
             unit.storagePath = _manifestRoot + asset.path;
             unit.size = asset.size;
             units->emplace(unit.customId, unit);
