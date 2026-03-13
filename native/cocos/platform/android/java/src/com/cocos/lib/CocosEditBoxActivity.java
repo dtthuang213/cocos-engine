@@ -254,7 +254,7 @@ public class CocosEditBoxActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN | WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         CocosEditBoxActivity.sThis = this;
 
         ViewGroup.LayoutParams frameLayoutParams =
@@ -310,10 +310,18 @@ public class CocosEditBoxActivity extends Activity {
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        layoutParams.bottomMargin = getStatusBarHeight();
         layout.addView(myLayout, layoutParams);
 
         this.addEditText(myLayout);
         this.addButton(myLayout);
+    }
+
+    public int getStatusBarHeight() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return GlobalObject.getActivity().getWindow().getDecorView().getRootWindowInsets().getSystemWindowInsetBottom();
+        }
+        return 0;
     }
 
     private int dpToPixel(int dp) {
@@ -321,6 +329,7 @@ public class CocosEditBoxActivity extends Activity {
         int px = (int) (dp * scale + 0.5f);
         return px;
     }
+
     private void addEditText(RelativeLayout layout) {
         mEditText = new Cocos2dxEditText(this);
         mEditText.setVisibility(View.INVISIBLE);

@@ -34,8 +34,12 @@ public class GlobalObject {
     private static Handler sHandler = null;
     private static Thread sUiThread = null;
 
+    private static boolean sInited = false;
+
     // Should be invoked in UI thread. The parameter `context` and `activity` could be the same value.
     public static void init(Context context, Activity activity) {
+        if (sInited) return;
+        sInited = true;
         sContext = context;
         sActivity = activity;
         sHandler = new Handler(Looper.getMainLooper());
