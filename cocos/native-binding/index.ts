@@ -90,6 +90,7 @@ export declare namespace native {
         export const UPDATE_FINISHED: number;
         export const UPDATE_FAILED: number;
         export const ERROR_DECOMPRESS: number;
+        export const DOWNLOAD_MANIFEST: number;
     }
 
     export interface ManifestAsset {
