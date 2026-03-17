@@ -433,7 +433,7 @@ static EditboxManager *instance = nil;
      CGRect safe = getSafeAreaRect();
      UIView *container = [[UIView alloc] initWithFrame:CGRectMake(
          0, 0,
-         0, //²»ÉèÖÃ¿í¶È£¬½»¸øÏµÍ³
+         0, //ä¸è®¾ç½®å®½åº¦ï¼Œäº¤ç»™ç³»ç»Ÿ
          TEXT_LINE_HEIGHT + ITEM_MARGIN_HEIGHT
      )];
      container.backgroundColor = [UIColor darkGrayColor];
@@ -475,7 +475,7 @@ static EditboxManager *instance = nil;
      [container addSubview:textField];
      [container addSubview:doneBtn];
 
-     //AutoLayout Ö»ÔÚ container ÄÚ²¿ÓÃ
+     //AutoLayout åªåœ¨ container å†…éƒ¨ç”¨
      UILayoutGuide *safeGuide = container.safeAreaLayoutGuide;
      [NSLayoutConstraint activateConstraints:@[
          // done
@@ -494,7 +494,7 @@ static EditboxManager *instance = nil;
      ((UITextField *)[inputbox inputOnView]).inputAccessoryView = container;
      [inputbox setInputOnToolbar:textField];
 
-     // ÊÍ·Å
+     // é‡Šæ”¾
      [container release];
      [textField release];
      [doneBtn release];
