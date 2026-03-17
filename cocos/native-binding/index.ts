@@ -354,6 +354,7 @@ export declare namespace native {
          * @param callback @en The event callback function @zh 事件处理回调
          */
         setEventCallback(callback: (arg: EventAssetsManager) => void): void;
+        cancelUpdate(): void;
     }
 
     export namespace AssetsManager {
