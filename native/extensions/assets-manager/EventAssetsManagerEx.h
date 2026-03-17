@@ -48,7 +48,8 @@ public:
         ERROR_UPDATING,
         UPDATE_FINISHED,
         UPDATE_FAILED,
-        ERROR_DECOMPRESS
+        ERROR_DECOMPRESS,
+        DOWNLOAD_MANIFEST
     };
 
     inline EventCode getEventCode() const {

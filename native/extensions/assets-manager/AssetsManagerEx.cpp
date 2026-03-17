@@ -621,7 +621,7 @@ void AssetsManagerEx::downloadManifest() {
     }
 
     std::string manifestUrl;// = _localManifest->getManifestFileUrl();
-    
+
     if (!_remoteManifest || !_remoteManifest->isVersionLoaded()) {
         manifestUrl = _localManifest->getManifestFileUrl();
     } else {
@@ -631,6 +631,7 @@ void AssetsManagerEx::downloadManifest() {
 
     if (!manifestUrl.empty()) {
         _updateState = State::DOWNLOADING_MANIFEST;
+        dispatchUpdateEvent(EventAssetsManagerEx::EventCode::DOWNLOAD_MANIFEST);
         // Download version file asynchronously
         _downloader->createDownloadTask(manifestUrl, _tempManifestPath, MANIFEST_ID);
     }
@@ -1061,6 +1062,10 @@ void AssetsManagerEx::onError(const network::DownloadTask &task,
 
 void AssetsManagerEx::onProgress(double total, double downloaded, const std::string & /*url*/, const std::string &customId) {
     if (customId == VERSION_ID || customId == MANIFEST_ID) {
+        _totalDownloaded = downloaded;
+        _totalSize = total;
+        _totalToDownload = 1;
+        _totalWaitToDownload = 1;
         _percent = static_cast<float>(100 * downloaded / total);
         // Notify progression event
         dispatchUpdateEvent(EventAssetsManagerEx::EventCode::UPDATE_PROGRESSION, customId);
