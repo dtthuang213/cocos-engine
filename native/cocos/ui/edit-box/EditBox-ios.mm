@@ -135,6 +135,36 @@ int getTextInputHeight(bool isMultiLine) {
         return TEXT_LINE_HEIGHT;
 }
 
+void setTextViewKeyboardType(UITextView *textView, const ccstd::string &inputType) {
+    if (0 == inputType.compare("password")) {
+        textView.secureTextEntry = TRUE;
+        textView.keyboardType = UIKeyboardTypeDefault;
+    } else {
+        textView.secureTextEntry = FALSE;
+        if (0 == inputType.compare("email"))
+            textView.keyboardType = UIKeyboardTypeEmailAddress;
+        else if (0 == inputType.compare("number"))
+            textView.keyboardType = UIKeyboardTypeDecimalPad;
+        else if (0 == inputType.compare("url"))
+            textView.keyboardType = UIKeyboardTypeURL;
+        else if (0 == inputType.compare("text"))
+            textView.keyboardType = UIKeyboardTypeDefault;
+    }
+}
+
+void setTextViewReturnType(UITextView *textView, const ccstd::string &returnType) {
+    if (0 == returnType.compare("done"))
+        textView.returnKeyType = UIReturnKeyDone;
+    else if (0 == returnType.compare("next"))
+        textView.returnKeyType = UIReturnKeyNext;
+    else if (0 == returnType.compare("search"))
+        textView.returnKeyType = UIReturnKeySearch;
+    else if (0 == returnType.compare("go"))
+        textView.returnKeyType = UIReturnKeyGo;
+    else if (0 == returnType.compare("send"))
+        textView.returnKeyType = UIReturnKeySend;
+}
+
 void setTextFieldKeyboardType(UITextField *textField, const ccstd::string &inputType) {
     if (0 == inputType.compare("password")) {
         textField.secureTextEntry = TRUE;
@@ -350,155 +380,153 @@ static EditboxManager *instance = nil;
     [textInputDictionnary release];
     [super dealloc];
 }
-- (UIBarButtonItem*) setInputWidthOf: (UIToolbar*)toolbar{
-    CGFloat totalItemsWidth = ITEM_MARGIN_WIDTH;
-    UIBarButtonItem *textViewBarButtonItem;
-    UIView *view;
-    for (UIBarButtonItem *barButtonItem in toolbar.items) {
-        if ((view = [barButtonItem valueForKey:@"view"])) {
-            if ([view isKindOfClass:[UITextView class]] || [view isKindOfClass:[UITextField class]]) {
-                textViewBarButtonItem = barButtonItem;
-            } else if ([view isKindOfClass:[UIButton class]]) {
-                // Docs say width can be negative for variable size items
-                totalItemsWidth += BUTTON_WIDTH + ITEM_MARGIN_WIDTH;
-            }
-        } else {
-            totalItemsWidth += barButtonItem.width + ITEM_MARGIN_WIDTH;
-        }
-        totalItemsWidth += ITEM_MARGIN_WIDTH;
-    }
-    [[textViewBarButtonItem customView]
-        setFrame:CGRectMake(0,
-                            0,
-                            getSafeAreaRect().size.width - totalItemsWidth,
-                            getTextInputHeight(g_isMultiline))];
-    return textViewBarButtonItem;
-}
-- (void) addInputAccessoryViewForTextView: (InputBoxPair*)inputbox
-                                     with:(const cc::EditBox::ShowInfo*)showInfo{
-    CGRect safeView = getSafeAreaRect();
-    UIToolbar* toolbar = [[UIToolbar alloc]
-                          initWithFrame:CGRectMake(0,
-                                                   0,
-                                                   safeView.size.width,
-                                                   getTextInputHeight(g_isMultiline) + ITEM_MARGIN_HEIGHT)];
-    [toolbar setBackgroundColor:[UIColor darkGrayColor]];
+- (void) addInputAccessoryViewForTextView:(InputBoxPair*)inputbox
+                                     with:(const cc::EditBox::ShowInfo*)showInfo {
+    UIView* container = [[UIView alloc]
+                         initWithFrame:CGRectMake(0,
+                                                  0,
+                                                  0, //不设置宽度，交给系统
+                                                  getTextInputHeight(g_isMultiline) + ITEM_MARGIN_HEIGHT)];
+    [container setBackgroundColor:[UIColor darkGrayColor]];
     
+    UITextView* inputOnView = (UITextView *)[inputbox inputOnView];
+    //TextView
     UITextView* textView = [[UITextView alloc] init];
     textView.textColor = [UIColor blackColor];
     textView.backgroundColor = [UIColor whiteColor];
     textView.layer.cornerRadius = 5.0;
     textView.clipsToBounds = YES;
+    textView.translatesAutoresizingMaskIntoConstraints = NO;
     textView.text = [NSString stringWithUTF8String:showInfo->defaultValue.c_str()];
-    TextViewDelegate* delegate = [[TextViewDelegate alloc] initWithPairs:[inputbox inputOnView] and:textView];
-    inputbox.inputDelegate = delegate;
-    textView.delegate = delegate;
-    UIBarButtonItem *textViewItem = [[UIBarButtonItem alloc] initWithCustomView:textView];
     
+    //delegate
+    TextViewDelegate* delegate = [[TextViewDelegate alloc]
+                                  initWithPairs:inputOnView
+                                  and:textView];
+    textView.delegate = delegate;
+    inputbox.inputDelegate = delegate;
+    
+    //Done Button
     if (!btnHandler){
         btnHandler = [[ButtonHandler alloc] init];
     }
-    UIButton *confirmBtn = [[UIButton alloc]
-                            initWithFrame:CGRectMake(0,
-                                                     0,
-                                                     BUTTON_WIDTH,
-                                                     BUTTON_HEIGHT)];
-    [confirmBtn addTarget:btnHandler
-                   action:@selector(buttonTapped:)
-         forControlEvents:UIControlEventTouchUpInside];
-    [confirmBtn setTitle:[NSString stringWithUTF8String:showInfo->confirmType.c_str()]
+    
+    UIButton *doneBtn = [[UIButton alloc]
+                         initWithFrame:CGRectMake(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT)];
+    [doneBtn setTitle:[NSString stringWithUTF8String:showInfo->confirmType.c_str()]
              forState:UIControlStateNormal];
-    [confirmBtn setTitleColor:[UIColor systemBlueColor]
+    [doneBtn setTitleColor:[UIColor systemBlueColor]
                   forState:UIControlStateNormal];
-    [confirmBtn setTitleColor:[UIColor darkTextColor]
-                  forState:UIControlStateHighlighted]; // Hight light state triggered when the button is tapped.
-    UIBarButtonItem *confirm = [[UIBarButtonItem alloc]initWithCustomView:confirmBtn];
+    [doneBtn setTitleColor:[UIColor darkTextColor]
+                  forState:UIControlStateHighlighted];
+    [doneBtn addTarget:btnHandler
+                action:@selector(buttonTapped:)
+      forControlEvents:UIControlEventTouchUpInside];
+    doneBtn.translatesAutoresizingMaskIntoConstraints = NO;
     
-    [toolbar setItems:@[textViewItem, confirm] animated:YES];
-    UIBarButtonItem* textViewBarButtonItem = [self setInputWidthOf:toolbar];
-    ((UITextView*)[inputbox inputOnView]).inputAccessoryView = toolbar;
+    //hierarchy
+    [container addSubview:textView];
+    [container addSubview:doneBtn];
     
-    [inputbox setInputOnToolbar:textViewBarButtonItem.customView];
+    //AutoLayout 只在 container 内部用
+    UILayoutGuide *safeGuide = container.safeAreaLayoutGuide;
+    [NSLayoutConstraint activateConstraints:@[
+        // done
+        [doneBtn.trailingAnchor constraintEqualToAnchor:safeGuide.trailingAnchor
+                                               constant:-ITEM_MARGIN_WIDTH],
+        [doneBtn.centerYAnchor constraintEqualToAnchor:container.centerYAnchor],
+        [doneBtn.widthAnchor constraintEqualToConstant:BUTTON_WIDTH],
+        // textField
+        [textView.leadingAnchor constraintEqualToAnchor:safeGuide.leadingAnchor
+                                               constant:ITEM_MARGIN_WIDTH],
+        [textView.trailingAnchor constraintEqualToAnchor:doneBtn.leadingAnchor
+                                                constant:-ITEM_MARGIN_WIDTH],
+        [textView.centerYAnchor constraintEqualToAnchor:container.centerYAnchor],
+        [textView.heightAnchor constraintEqualToConstant:getTextInputHeight(g_isMultiline)],
+    ]];
+    [inputOnView setInputAccessoryView:container];
+    [inputbox setInputOnToolbar:textView];
+    
     //release for NON ARC ENV
-    [toolbar release];
+    [container release];
     [textView release];
-    [confirmBtn release];
-    [textViewItem release];
-    [confirm release];
+    [doneBtn release];
     
 }
 - (void)addInputAccessoryViewForTextField:(InputBoxPair *)inputbox
-                                      with:(const cc::EditBox::ShowInfo *)showInfo
- {
-     CGRect safe = getSafeAreaRect();
-     UIView *container = [[UIView alloc] initWithFrame:CGRectMake(
-         0, 0,
-         0, //不设置宽度，交给系统
-         TEXT_LINE_HEIGHT + ITEM_MARGIN_HEIGHT
-     )];
-     container.backgroundColor = [UIColor darkGrayColor];
-
-     //TextField
-     UITextField *textField = [[UITextField alloc] init];
-     textField.borderStyle = UITextBorderStyleRoundedRect;
-     textField.font = [UIFont systemFontOfSize:16];
-     textField.translatesAutoresizingMaskIntoConstraints = NO;
-     textField.text = [NSString stringWithUTF8String:showInfo->defaultValue.c_str()];
-
-     //delegate
-     TextFieldDelegate *delegate =
-         [[TextFieldDelegate alloc] initWithPairs:[inputbox inputOnView]
-                                              and:textField];
-     textField.delegate = delegate;
-     [textField addTarget:delegate
-                   action:@selector(textFieldDidChange:)
-         forControlEvents:UIControlEventEditingChanged];
-     inputbox.inputDelegate = delegate;
-
-     //Done Button
-     if (!btnHandler) {
-         btnHandler = [[ButtonHandler alloc] init];
-     }
-
-     UIButton *doneBtn = [[UIButton alloc]
-         initWithFrame:CGRectMake(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT)];
-     [doneBtn setTitle:[NSString stringWithUTF8String:showInfo->confirmType.c_str()]
-              forState:UIControlStateNormal];
-     [doneBtn setTitleColor:[UIColor systemBlueColor]
-                   forState:UIControlStateNormal];
-     [doneBtn addTarget:btnHandler
-                 action:@selector(buttonTapped:)
-       forControlEvents:UIControlEventTouchUpInside];
-     doneBtn.translatesAutoresizingMaskIntoConstraints = NO;
-
-     //hierarchy
-     [container addSubview:textField];
-     [container addSubview:doneBtn];
-
-     //AutoLayout 只在 container 内部用
-     UILayoutGuide *safeGuide = container.safeAreaLayoutGuide;
-     [NSLayoutConstraint activateConstraints:@[
-         // done
-         [doneBtn.trailingAnchor constraintEqualToAnchor:safeGuide.trailingAnchor
-                                              constant:-ITEM_MARGIN_WIDTH],
-         [doneBtn.centerYAnchor constraintEqualToAnchor:container.centerYAnchor],
-         [doneBtn.widthAnchor constraintEqualToConstant:BUTTON_WIDTH],
-         // textField
-         [textField.leadingAnchor constraintEqualToAnchor:safeGuide.leadingAnchor
+                                     with:(const cc::EditBox::ShowInfo *)showInfo {
+    UIView *container = [[UIView alloc]
+                         initWithFrame:CGRectMake(0,
+                                                  0,
+                                                  0, //不设置宽度，交给系统
+                                                  TEXT_LINE_HEIGHT + ITEM_MARGIN_HEIGHT)];
+    container.backgroundColor = [UIColor darkGrayColor];
+    
+    UITextField* inputOnView = (UITextField *)[inputbox inputOnView];
+    //TextField
+    UITextField *textField = [[UITextField alloc] init];
+    textField.borderStyle = UITextBorderStyleRoundedRect;
+    textField.textColor = [UIColor blackColor];
+    textField.backgroundColor = [UIColor whiteColor];
+    textField.translatesAutoresizingMaskIntoConstraints = NO;
+    textField.text = [NSString stringWithUTF8String:showInfo->defaultValue.c_str()];
+    
+    //delegate
+    TextFieldDelegate *delegate = [[TextFieldDelegate alloc]
+                                   initWithPairs:inputOnView
+                                   and:textField];
+    textField.delegate = delegate;
+    [textField addTarget:delegate
+                  action:@selector(textFieldDidChange:)
+        forControlEvents:UIControlEventEditingChanged];
+    inputbox.inputDelegate = delegate;
+    
+    //Done Button
+    if (!btnHandler) {
+        btnHandler = [[ButtonHandler alloc] init];
+    }
+    
+    UIButton *doneBtn = [[UIButton alloc]
+                         initWithFrame:CGRectMake(0, 0, BUTTON_WIDTH, BUTTON_HEIGHT)];
+    [doneBtn setTitle:[NSString stringWithUTF8String:showInfo->confirmType.c_str()]
+             forState:UIControlStateNormal];
+    [doneBtn setTitleColor:[UIColor systemBlueColor]
+                  forState:UIControlStateNormal];
+    [doneBtn setTitleColor:[UIColor darkTextColor]
+                  forState:UIControlStateHighlighted];
+    [doneBtn addTarget:btnHandler
+                action:@selector(buttonTapped:)
+      forControlEvents:UIControlEventTouchUpInside];
+    doneBtn.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    //hierarchy
+    [container addSubview:textField];
+    [container addSubview:doneBtn];
+    
+    //AutoLayout 只在 container 内部用
+    UILayoutGuide *safeGuide = container.safeAreaLayoutGuide;
+    [NSLayoutConstraint activateConstraints:@[
+        // done
+        [doneBtn.trailingAnchor constraintEqualToAnchor:safeGuide.trailingAnchor
+                                               constant:-ITEM_MARGIN_WIDTH],
+        [doneBtn.centerYAnchor constraintEqualToAnchor:container.centerYAnchor],
+        [doneBtn.widthAnchor constraintEqualToConstant:BUTTON_WIDTH],
+        // textField
+        [textField.leadingAnchor constraintEqualToAnchor:safeGuide.leadingAnchor
                                                 constant:ITEM_MARGIN_WIDTH],
-         [textField.trailingAnchor constraintEqualToAnchor:doneBtn.leadingAnchor
+        [textField.trailingAnchor constraintEqualToAnchor:doneBtn.leadingAnchor
                                                  constant:-ITEM_MARGIN_WIDTH],
-         [textField.centerYAnchor constraintEqualToAnchor:container.centerYAnchor],
-         [textField.heightAnchor constraintEqualToConstant:TEXT_LINE_HEIGHT],
-     ]];
-     ((UITextField *)[inputbox inputOnView]).inputAccessoryView = container;
-     [inputbox setInputOnToolbar:textField];
-
-     // 释放
-     [container release];
-     [textField release];
-     [doneBtn release];
- }
+        [textField.centerYAnchor constraintEqualToAnchor:container.centerYAnchor],
+        [textField.heightAnchor constraintEqualToConstant:TEXT_LINE_HEIGHT],
+    ]];
+    [inputOnView setInputAccessoryView:container];
+    [inputbox setInputOnToolbar:textField];
+    
+    // 释放
+    [container release];
+    [textField release];
+    [doneBtn release];
+}
 
 - (id) createTextView:    (const cc::EditBox::ShowInfo *)showInfo {
     InputBoxPair* ret;
@@ -510,27 +538,32 @@ static EditboxManager *instance = nil;
     
     if ((ret = [textInputDictionnary objectForKey:inputType])) {
         [[ret inputOnView] setFrame:CGRectMake(showInfo->x,
-                                 viewRect.size.height - showInfo->y - showInfo->height,
-                                 showInfo->width,
-                                 showInfo->height)];
+                                               viewRect.size.height - showInfo->y - showInfo->height,
+                                               showInfo->width,
+                                               showInfo->height)];
         CGRect safeArea = getSafeAreaRect();
         [[[ret inputOnView] inputAccessoryView] setFrame:CGRectMake(0,
-                                                                           0,
-                                                                           safeArea.size.width,
+                                                                    0,
+                                                                    safeArea.size.width,
                                                                     getTextInputHeight(g_isMultiline) + ITEM_MARGIN_HEIGHT)];
-        [self setInputWidthOf:[[ret inputOnView] inputAccessoryView] ];
     } else {
         ret = [[InputBoxPair alloc] init];
         [ret setInputOnView:[[UITextView alloc]
-               initWithFrame:CGRectMake(showInfo->x,
-                                        viewRect.size.height - showInfo->y - showInfo->height,
-                                        showInfo->width,
-                                        showInfo->height)]];
+                             initWithFrame:CGRectMake(showInfo->x,
+                                                      viewRect.size.height - showInfo->y - showInfo->height,
+                                                      showInfo->width,
+                                                      showInfo->height)]];
         [textInputDictionnary setValue:ret forKey:inputType];
         [self addInputAccessoryViewForTextView:ret with:showInfo];
     }
-    ((UITextView*)[ret inputOnToolbar]).text = [NSString stringWithUTF8String:showInfo->defaultValue.c_str()];
-    ((UITextView*)[ret inputOnView]).text = [NSString stringWithUTF8String:showInfo->defaultValue.c_str()];
+    UITextView*inputOnToolbar = (UITextView*)[ret inputOnToolbar];
+    inputOnToolbar.text = [NSString stringWithUTF8String:showInfo->defaultValue.c_str()];
+    setTextViewReturnType(inputOnToolbar, showInfo->confirmType);
+    setTextViewKeyboardType(inputOnToolbar, showInfo->inputType);
+    UITextView*inputOnView = (UITextView*)[ret inputOnView];
+    inputOnView.text = [NSString stringWithUTF8String:showInfo->defaultValue.c_str()];
+    setTextViewReturnType(inputOnView, showInfo->confirmType);
+    setTextViewKeyboardType(inputOnView, showInfo->inputType);
     return ret;
 }
 - (id) createTextField:    (const cc::EditBox::ShowInfo*)showInfo {
@@ -542,31 +575,32 @@ static EditboxManager *instance = nil;
     
     if ((ret = [textInputDictionnary objectForKey:inputType])) {
         [[ret inputOnView] setFrame:CGRectMake(showInfo->x,
-                                 viewRect.size.height - showInfo->y - showInfo->height,
-                                 showInfo->width,
-                                 showInfo->height)];
+                                               viewRect.size.height - showInfo->y - showInfo->height,
+                                               showInfo->width,
+                                               showInfo->height)];
         CGRect safeArea = getSafeAreaRect();
         [[[ret inputOnView] inputAccessoryView] setFrame:CGRectMake(0,
-                                                                           0,
+                                                                    0,
                                                                     safeArea.size.width,
                                                                     getTextInputHeight(g_isMultiline) + ITEM_MARGIN_HEIGHT)];
-//        [self setInputWidthOf:[[ret inputOnView] inputAccessoryView] ];
     } else {
         ret = [[InputBoxPair alloc] init];
         [ret setInputOnView:[[UITextField alloc]
-                initWithFrame:CGRectMake(showInfo->x,
-                                         viewRect.size.height - showInfo->y - showInfo->height,
-                                         showInfo->width,
-                                         showInfo->height)]];
+                             initWithFrame:CGRectMake(showInfo->x,
+                                                      viewRect.size.height - showInfo->y - showInfo->height,
+                                                      showInfo->width,
+                                                      showInfo->height)]];
         [textInputDictionnary setValue:ret forKey:inputType];
         [self addInputAccessoryViewForTextField:ret with:showInfo];
     }
-    ((UITextField*)[ret inputOnToolbar]).text = [NSString stringWithUTF8String:showInfo->defaultValue.c_str()];
-    ((UITextField*)[ret inputOnView]).text = [NSString stringWithUTF8String:showInfo->defaultValue.c_str()];
-    setTextFieldReturnType((UITextField*)[ret inputOnToolbar], showInfo->confirmType);
-    setTextFieldReturnType((UITextField*)[ret inputOnView], showInfo->confirmType);
-    setTextFieldKeyboardType((UITextField*)[ret inputOnToolbar], showInfo->inputType);
-    setTextFieldKeyboardType((UITextField*)[ret inputOnView], showInfo->inputType);
+    UITextField*inputOnToolbar = (UITextField*)[ret inputOnToolbar];
+    inputOnToolbar.text = [NSString stringWithUTF8String:showInfo->defaultValue.c_str()];
+    setTextFieldReturnType(inputOnToolbar, showInfo->confirmType);
+    setTextFieldKeyboardType(inputOnToolbar, showInfo->inputType);
+    UITextField*inputOnView = (UITextField*)[ret inputOnView];
+    inputOnView.text = [NSString stringWithUTF8String:showInfo->defaultValue.c_str()];
+    setTextFieldReturnType(inputOnView, showInfo->confirmType);
+    setTextFieldKeyboardType(inputOnView, showInfo->inputType);
     return ret;
 }
 
