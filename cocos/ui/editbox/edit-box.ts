@@ -603,7 +603,7 @@ export class EditBox extends Component {
         // 对输入字符进行限制
         if (this._restrictPattern) {
             // 部分输入法兼容
-            text = text.replace(/\u2006|\x27/g, "");
+            text = text.replace(/\u2006/g, "");
 
             let match = text.match(this._restrictPattern);
             if (match) {
