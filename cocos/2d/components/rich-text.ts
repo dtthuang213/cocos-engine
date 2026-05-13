@@ -1170,7 +1170,13 @@ this._measureText(styleIndex) as unknown as (s: string) => number,
         }
 
         if (this._maxWidth > 0) {
-            this._labelWidth = this._maxWidth;
+            this._labelWidth = 0;
+            for (let i = 0; i < this._linesWidth.length; i++) {
+                const element = this._linesWidth[i];
+                if (element > this._labelWidth) {
+                    this._labelWidth = element;
+                }
+            }
         }
         this._labelHeight = (this._lineCount + BASELINE_RATIO) * this._lineHeight + this._lineSpacing * (this._lineCount - 1);
 
