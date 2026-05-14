@@ -381,6 +381,28 @@ export class RichText extends Component {
 
     /**
      * @en
+     * The minimize width of the RichText.
+     *
+     * @zh
+     * 富文本的最小宽度。
+     */
+    @editable
+    get minWidth (): number {
+        return this._minWidth;
+    }
+
+    set minWidth (value) {
+        if (this._minWidth === value) {
+            return;
+        }
+
+        this._minWidth = value;
+        this._layoutDirty = true;
+        this._updateRichTextStatus();
+    }
+
+    /**
+     * @en
      * Line Height of RichText.
      *
      * @zh
@@ -502,6 +524,8 @@ export class RichText extends Component {
     protected _fontColor: Color = Color.WHITE.clone();
     @serializable
     protected _maxWidth = 0;
+    @serializable
+    protected _minWidth = 0;
     @serializable
     protected _fontFamily = 'Arial';
     @serializable
@@ -1177,6 +1201,9 @@ this._measureText(styleIndex) as unknown as (s: string) => number,
                     this._labelWidth = element;
                 }
             }
+        }
+        if (this._minWidth > 0 && this._minWidth > this._labelWidth) {
+            this._labelWidth = this._minWidth;
         }
         this._labelHeight = (this._lineCount + BASELINE_RATIO) * this._lineHeight + this._lineSpacing * (this._lineCount - 1);
 
